@@ -20,7 +20,7 @@ export const register = async (req: Request, res: Response) => {
         }
     }
 
-    res.json({ error: 'E-mail e/ou senha não enviados.' });
+    //res.json({ error: 'E-mail e/ou senha não enviados.' });
 }
 
 export const login = async (req: Request, res: Response) => {
@@ -31,7 +31,6 @@ export const login = async (req: Request, res: Response) => {
         let user = await User.findOne({ 
             where: { email, password }
         });
-
         if(user) {
             res.json({ status: true });
             return;
