@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import * as UserService from '../services/UserService'
 import { User } from '../models/User';
 
 export const ping = (req: Request, res: Response) => {
@@ -8,41 +9,40 @@ export const ping = (req: Request, res: Response) => {
 export const register = async (req: Request, res: Response) => {
     if(req.body.email && req.body.password) {
         let { email, password } = req.body;
+        const newUser = await UserService.createUser(email, password)
 
-        let hasUser = await User.findOne({where: { email }});
-        if(!hasUser) {
-            let newUser = await User.create({ email, password });
-
-            res.status(201);
-            res.json({ id: newUser.id });
-        } else {
-            res.json({ error: 'E-mail já existe.' });
+        if(newUser instanceof Error){
+            res.json({ error: newUser.message})
+        }else{
+            res.status(201)
+            res.json({ id: newUser.id})
         }
     }
-
-    res.json({ error: 'E-mail e/ou senha não enviados.' });
+    
+    //res.json({ error: 'E-mail e/ou senha não enviados.' });
 }
 
 export const login = async (req: Request, res: Response) => {
     if(req.body.email && req.body.password) {
         let email: string = req.body.email;
         let password: string = req.body.password;
+        const user = await UserService.findByEmail(email)
 
-        let user = await User.findOne({ 
-            where: { email, password }
-        });
-
-        if(user) {
+        if(user && UserService.matchPassword(password, user.password)){
             res.json({ status: true });
             return;
+        }else{
+            res.json({ status: false });
+
         }
+        
     }
 
-    res.json({ status: false });
 }
 
 export const list = async (req: Request, res: Response) => {
-    let users = await User.findAll();
+    console.log('-----------------------------')
+    let users = await User.findAll()
     let list: string[] = [];
 
     for(let i in users) {
